@@ -13,6 +13,9 @@ public class RamblersState {
 
   private int localCost;
 
+  // A*
+  private int estRemCost;
+
   private int x;
 
   private int y;
@@ -29,6 +32,14 @@ public class RamblersState {
   */
   public int getLocalCost(){
     return localCost;
+  }
+
+  /**
+   * accessor for Estimated Reaming Cost
+   */
+  // A*
+  public int getestRemCost(){
+    return estRemCost;
   }
 
   /**
@@ -67,6 +78,31 @@ public class RamblersState {
   }
 
 
+  /**
+   * mutator for Estimated Reaming cost
+   */
+  public void setEstCost(int c){
+    estRemCost = c;
+  }
+
+  /**
+   * mutator for Reaming cost
+   */
+  public void setRemCost(int g_x, int g_y){
+    int d_x = x - g_x;
+    if(d_x < 0){
+      d_x = d_x*-1;
+    }
+
+    int d_y = g_y - y;
+    if(d_y < 0){
+      d_y = d_y*-1;
+    }
+    estRemCost = d_y + d_x;
+
+  }
+
+
   public boolean goalPredicate(RamblersSearch searcher){
     RamblersState goal = searcher.getGoal();
 
@@ -84,11 +120,13 @@ public class RamblersState {
   }
   public ArrayList<RamblersState> getSuccessors(RamblersSearch searcher){
     ArrayList<RamblersState> t = new ArrayList<RamblersState>();
+    RamblersState goal = searcher.getGoal();
     if(x >0){
       RamblersState temp = new RamblersState(x-1, y);
       int h = searcher.getHeight(x-1, y);
       temp.setHeight(h);
       temp.setLocalCost(calcCost(h));
+      temp.setRemCost(goal.getX(), goal.getY());
       t.add(temp);
     }
 
@@ -97,6 +135,7 @@ public class RamblersState {
       int h = searcher.getHeight(x+1, y);
       temp.setHeight(h);
       temp.setLocalCost(calcCost(h));
+      temp.setRemCost(goal.getX(), goal.getY());
       t.add(temp);
     }
     if(y >0){
@@ -104,6 +143,7 @@ public class RamblersState {
       int h = searcher.getHeight(x, y-1);
       temp.setHeight(h);
       temp.setLocalCost(calcCost(h));
+      temp.setRemCost(goal.getX(), goal.getY());
       t.add(temp);
     }
 
@@ -112,6 +152,7 @@ public class RamblersState {
       int h = searcher.getHeight(x, y+1);
       temp.setHeight(h);
       temp.setLocalCost(calcCost(h));
+      temp.setRemCost(goal.getX(), goal.getY());
       t.add(temp);
     }
 

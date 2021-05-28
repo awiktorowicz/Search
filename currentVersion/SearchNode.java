@@ -16,6 +16,8 @@ public  class SearchNode {
   private int Cost;
   private int globalCost;
   private int localCost;
+  private int estRemCost; //A*
+  private int estTotalCost; //A*
   private SearchNode parent; // the parent node
 
   /**
@@ -23,9 +25,10 @@ public  class SearchNode {
   * @param s a SearchState
   * @param lc local cost of getting to this node from its predecessor */
 
-  public SearchNode(RamblersState s, int lc) {
+  public SearchNode(RamblersState s, int lc, int erc) {
     state= (RamblersState) s;
     localCost=lc;
+    estRemCost=erc;
   }
 
   /**
@@ -83,9 +86,43 @@ public  class SearchNode {
   }
 
   /**
+   * mutator for estremcost
+   * for A*
+   */
+
+  public void setestRemCost(int erc) {
+    estRemCost=erc;
+  }
+
+  /**
+   * accessor for estremcost
+   * for A*
+   */
+  public int getestRemCost() {
+    return estRemCost;
+  }
+
+  /**
+   * mutator for esttotalcost
+   * for A*
+   */
+  public void setestTotalCost(int erc) {
+    estTotalCost=erc;
+  }
+
+  /**
+   * accessor for esttotalcost
+   * for A*
+   */
+  public int getestTotalCost() {
+    return estTotalCost;
+  }
+
+  /**
   * goalP takes a SearchNode & returns true if it's a goal
   * @param searcher the current search
   */
+
 
   public  boolean goalPredicate(RamblersSearch searcher) {
     return state.goalPredicate(searcher);
@@ -93,7 +130,7 @@ public  class SearchNode {
 
   /**
   * getSuccessors for this node
-  *
+  * A* - adds estremcost to node
   * @param searcher the current search
   * @return ArrayList of successor nodes
   */
@@ -103,7 +140,7 @@ public  class SearchNode {
     ArrayList<SearchNode> nlis= new ArrayList<SearchNode>();
 
     for (RamblersState suc_state:slis){
-         SearchNode n = new SearchNode(suc_state, suc_state.getLocalCost());
+      SearchNode n = new SearchNode(suc_state, suc_state.getLocalCost(), suc_state.getestRemCost());
       nlis.add(n);
     }
     return nlis;
@@ -126,7 +163,7 @@ public  class SearchNode {
     else
       parent_state = parent.get_State().toString();
     return "node with state (" + nodeState + ") parent state (" + parent_state + ") local cost (" + localCost
-            + ") global cost (" + globalCost + ")";
+            + ") global cost (" + globalCost + ")"+" Estimated Reaming cost (" +estRemCost+ ") Estimated total cost (" +estTotalCost+ ")";
   }
 
 

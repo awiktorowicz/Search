@@ -108,7 +108,7 @@ public class RamblersSearch {
   //run a search
   public  String runSearch (RamblersState initState, RamblersState end, String strat) {
 
-    initNode = new SearchNode(initState,0); // create initial node
+    initNode = new SearchNode(initState,0,0); // create initial node
     initNode.setGlobalCost(0);
     setGoal(end);
 
@@ -154,43 +154,49 @@ public class RamblersSearch {
 	  //get all successor nodes
 	  successorNodes = currentNode.getSuccessors(this); //pass search instance
 
-    //set global costs and parents for successors
+    // set global costs and parents for successors
+    // A* - set estTotalCost
     for (SearchNode snode: successorNodes){
       snode.setGlobalCost(currentNode.getGlobalCost()+ snode.getLocalCost());
       snode.setParent(currentNode);
+      snode.setestTotalCost(snode.getGlobalCost()+snode.getestRemCost()); //A*
     }
 
-	  vetSuccessors(); //filter out unwanted - DP check
+    vetSuccessors(); //filter out unwanted - DP check
 
-	  //add surviving nodes to open
-	  for (SearchNode snode: successorNodes) open.add(snode);
+    //add surviving nodes to open
+    for (SearchNode snode: successorNodes) open.add(snode);
   }
 
 
-  //vet the successors - reject any whose states are on open or closed
+  // vet the successors
+  // A* - can't ignore nodes already closed
+  private void vetSuccessors() {
+    ArrayList<SearchNode> vslis = new ArrayList<SearchNode>();
 
-	private void vetSuccessors() {
-	  ArrayList<SearchNode> vslis = new ArrayList<SearchNode>();
-
-	  for (SearchNode snode: successorNodes){
+    for (SearchNode snode: successorNodes){
       if (onOpen(snode)) { //on open - usual DP check
         if (snode.getGlobalCost()<old_node.getGlobalCost()) {
           old_node.setParent(snode.getParent()); //better route, modify node
           old_node.setGlobalCost(snode.getGlobalCost());
           old_node.setLocalCost(snode.getLocalCost());
+          old_node.setestTotalCost(snode.getestTotalCost());
         }
       }
       else {
-          if (onClosed(snode)) {
-              if (snode.getGlobalCost()<old_node.getGlobalCost()) {
-                  old_node.setParent(snode.getParent()); //better route, modify node
-                  old_node.setGlobalCost(snode.getGlobalCost());
-                  old_node.setLocalCost(snode.getLocalCost());
-              }
+        if (onClosed(snode)) { //A* - on closed - DP check again
+          if (snode.getGlobalCost()<old_node.getGlobalCost()) {
+            old_node.setParent(snode.getParent()); //better route, modify node
+            old_node.setGlobalCost(snode.getGlobalCost());
+            old_node.setLocalCost(snode.getLocalCost());
+            old_node.setestTotalCost(snode.getestTotalCost());
+            open.add(old_node); //A* - add the node back to open
+            closed.remove(old_node); //A* - & remove it from closed
           }
-          else vslis.add(snode); //not seen before
+        }
+        else vslis.add(snode); //not seen before
       }
-	  }
+    }
     successorNodes = vslis;
   }
 
@@ -224,16 +230,17 @@ public class RamblersSearch {
   }
 
 
-   //select the next node
+   //Selection Strategies
    private void selectNode(String strat) {
 	  if (strat== "depthFirst")
       depthFirst();
-    else
+      else
       if(strat=="breadthFirst")
         breadthFirst();
       else
         if(strat=="branchAndBound")
           branchAndBound();
+        else AStar();
    }
 
     private void depthFirst () {
@@ -259,8 +266,23 @@ public class RamblersSearch {
 
         currentNode=minCostNode;
         open.remove(minCostNode);
+    }
+
+    //A* - select node according to estTotalCost
+
+    private void AStar(){
+
+      Iterator i = open.iterator();
+      SearchNode minCostNode=(SearchNode) i.next();
+      for (;i.hasNext();){
+        SearchNode n=(SearchNode) i.next();
+        if (n.getestTotalCost()<minCostNode.getestTotalCost()){
+          minCostNode=n;};
       }
 
+      currentNode=minCostNode;
+      open.remove(minCostNode);
+    }
 
     	// report success - reconstruct path, convert to string & return
       private String reportSuccess(){
