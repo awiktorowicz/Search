@@ -18,6 +18,7 @@ public class RamblersSearch {
   private int[][] map;
   private int width;
   private int depth;
+  public int numOfNodes;
 
     /**
      * constructor
@@ -133,9 +134,6 @@ public class RamblersSearch {
     }
 
       selectNode(strat); //selectNode selects next node given strategy,
-      
-      //makes it currentNode & removes it from open
-      System.out.println("Current node: "+currentNode.toString());
 
       if (currentNode.goalPredicate(this)) return reportSuccess();  //success
       //call reportSuccess
@@ -143,6 +141,7 @@ public class RamblersSearch {
       expand(); //go again
       closed.add(currentNode); //put current node on closed
       numIteration = numIteration + 1;
+      numOfNodes = numIteration;
   	}
   	return "Search Fails";  //out of the while loop - failure
 	}
@@ -290,6 +289,7 @@ public class RamblersSearch {
 	    SearchNode n = currentNode;
 	    StringBuffer buf = new StringBuffer(n.toString());
 	    int plen=1;
+      numOfNodes --;
 
 	    while (n.getParent() != null){
 	      buf.insert(0,"\n");
@@ -302,8 +302,10 @@ public class RamblersSearch {
 	    System.out.println("Search Succeeds");
 
     	System.out.println("Efficiency "+ ((float) plen/(closed.size()+1)));
+      System.out.println("Number of opened nodes: " + numOfNodes);
 	    System.out.println("Solution Path\n");
 	    return buf.toString();
+
     }
 
 }
